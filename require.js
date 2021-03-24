@@ -93,6 +93,8 @@ function isdir(path) {
 
 const cwdStack = [dirname(scriptArgs[0])];
 
+const moduleCache = {};
+
 export function require(path) {
     let abspath;
     if (path.startsWith('/') || path.startsWith('./') || path.startsWith('../')) {
@@ -127,19 +129,26 @@ export function require(path) {
         throw new Error(path + ' not extsts');
     }
     fname = normpath(fname);
-    // console.log(fname);
-    cwdStack.push(dirname(fname));
-    let ret;
-    if (isjson) {
-        ret = JSON.parse(std.loadFile(fname));
+    if (moduleCache.hasOwnProperty(fname)) {
+        return moduleCache[fname];
     } else {
-        let module = { exports: {} };
-        let exports = module.exports;
-        eval(std.loadFile(fname));
-        ret = module.exports;
+        // console.log('loading ' + fname);
+        cwdStack.push(dirname(fname));
+        let ret;
+        if (isjson) {
+            ret = JSON.parse(std.loadFile(fname));
+        } else {
+            let module = { exports: {} };
+            let exports = module.exports;
+            eval(std.loadFile(fname));
+            ret = module.exports;
+        }
+        cwdStack.pop();
+        moduleCache[fname] = ret;
+        return ret;
     }
-    cwdStack.pop();
-    return ret;
 }
+
+require.cache = moduleCache;
 
 // require('./a/foo.js');
