@@ -92,41 +92,55 @@ function isdir(path) {
 }
 
 const cwdStack = [dirname(scriptArgs[0])];
-
 const moduleCache = {};
+export let nodeModulesPath = cwdStack[0];
+let localModulesPath = nodeModulesPath;
 
 export function require(path) {
+    let cwd = cwdStack[cwdStack.length - 1];
     let abspath;
-    if (path.startsWith('/') || path.startsWith('./') || path.startsWith('../')) {
-        abspath = cwdStack[cwdStack.length - 1] + '/' + path;
-    } else {
-        throw new Error(path + ' internal module of node.js is not supported');
-    }
     let fname;
     let isjson = false;
-    // console.log(abspath);
-    let [st, err] = os.stat(abspath);
-    if (err === 0) { // exists
-        if (S_ISREG(st.mode)) {
-            fname = abspath;
-        } else if (S_ISDIR(st.mode)) {
-            if (isfile(abspath + '/package.json')) {
-                fname = abspath + '/' + JSON.parse(std.loadFile(abspath + '/package.json')).main;
-            } else if (isfile(abspath + '/index.js')) {
-                fname = abspath + '/index.js';
-            } else {
-                throw new Error(path + ' is directory but failed to load');
-            }
-        } else {
-            throw new Error(path + ' extsts but neither file nor directory');
+    let resolve = () => {
+        // console.log(abspath);
+        if (exists(abspath + '/node_modules')) {
+            localModulesPath = abspath + '/node_modules';
         }
-    } else if (isfile(abspath + '.js')) {
-        fname = abspath + '.js';
-    } else if (isfile(abspath + '.json')) {
-        fname = abspath + '.json';
-        isjson = true;
+        let [st, err] = os.stat(abspath);
+        if (err === 0) { // exists
+            if (S_ISREG(st.mode)) {
+                fname = abspath;
+            } else if (S_ISDIR(st.mode)) {
+                if (isfile(abspath + '/package.json')) {
+                    fname = abspath + '/' + JSON.parse(std.loadFile(abspath + '/package.json')).main;
+                } else if (isfile(abspath + '/index.js')) {
+                    fname = abspath + '/index.js';
+                } else {
+                    throw new Error(path + ' is directory but invalid');
+                }
+            } else {
+                throw new Error(path + ' extsts but neither file nor directory');
+            }
+        } else if (isfile(abspath + '.js')) {
+            fname = abspath + '.js';
+        } else if (isfile(abspath + '.json')) {
+            fname = abspath + '.json';
+            isjson = true;
+        } else {
+            throw new Error(abspath + ' not extsts');
+        }
+    }
+    if (path.startsWith('/') || path.startsWith('./') || path.startsWith('../')) {
+        abspath = cwd + '/' + path;
+        resolve();
     } else {
-        throw new Error(path + ' not extsts');
+        try {
+            abspath = localModulesPath + '/' + path;
+            resolve();
+        } catch (e) {
+            abspath = nodeModulesPath + '/' + path;
+            resolve();
+        }
     }
     fname = normpath(fname);
     if (moduleCache.hasOwnProperty(fname)) {

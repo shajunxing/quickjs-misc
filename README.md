@@ -1,4 +1,4 @@
-# CommonJS require() function implementation for QuickJS
+# Miscellaneous simple tiny modules for QuickJS
 
 ## License
 
@@ -24,6 +24,15 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-## Usage
+## curl.js
 
-Just `import { require } from 'require.js'`, and then you can `require()` node.js modules. Module path must be leading with '/' or './' or '../', or will be treated as internal module and of course is not supported.
+    import { get } from 'misc/curl.js'
+    let html = get('https://example.com');
+    console.log(html);
+
+## require.js
+
+    import { require } from 'misc/require.js'
+    const parse5 = require('./parse5');
+    let document = parse5.parse('<!doctype html><html><head></head></html>');
+    console.log(document.childNodes[0].name);
