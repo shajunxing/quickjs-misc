@@ -26,13 +26,19 @@ SOFTWARE.
 
 ## curl.js
 
-    import { get } from 'misc/curl.js'
+    import { get } from '../misc/curl.js'
     let html = get('https://example.com');
     console.log(html);
 
 ## require.js
 
-    import { require } from 'misc/require.js'
+    import { require } from '../misc/require.js'
     const parse5 = require('./parse5');
     let document = parse5.parse('<!doctype html><html><head></head></html>');
     console.log(document.childNodes[0].name);
+
+## sqlite.js
+
+    import { Database } from '../misc/sqlite.js'
+    let db = new Database(':memory:');
+    console.log(JSON.stringify(db.exec('create table foo (id int, name text);insert into foo values(0, \'hello\');insert into foo values(1, \'world\');insert into foo values(2, \'foo\');insert into foo values(3, \'bar\');select * from foo')));
