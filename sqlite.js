@@ -45,18 +45,17 @@ export class Database {
             throw new Error(err);
         }
     }
-    free = () => {
+    close = () => {
         sqlite3_close(this.pdb);
     }
     exec = (sql) => {
-        let ret = undefined;
+        let result = [];
         let cb = new CCallback(function (pArg, nCol, azVals, azCols) {
             let row = {};
             for (let i = 0; i < nCol; i++) {
                 row[newstring(readUintptrArray(azCols, i))] = newstring(readUintptrArray(azVals, i));
             }
-            if (ret === undefined) ret = [];
-            ret.push(row);
+            result.push(row);
             return 0;
         }, null, 'int', 'pointer', 'int', 'pointer', 'pointer');
         let pperrmsg = malloc(sizeof_uintptr_t);
@@ -69,7 +68,7 @@ export class Database {
             sqlite3_free(perrmsg);
             throw new Error(err);
         }
-        return ret;
+        return result;
     }
 }
 
