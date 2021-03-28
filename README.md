@@ -41,5 +41,9 @@ SOFTWARE.
 
     import { Database } from '../misc/sqlite.js'
     let db = new Database(':memory:');
-    console.log(JSON.stringify(db.exec('create table foo (id int, name text);insert into foo values(0, \'hello\');insert into foo values(1, \'world\');insert into foo values(2, \'foo\');insert into foo values(3, \'bar\');select * from foo')));
+    db.update('create table foo (id int, name text);insert into foo values(0, \'hello\');insert into foo values(1, \'world\');insert into foo values(2, \'foo\')');
+    for (let row of db.query('select * from foo')) {
+        console.log(JSON.stringify(row));
+    }
+    console.log(JSON.stringify([...db.query('select * from foo')]));
     db.close();
